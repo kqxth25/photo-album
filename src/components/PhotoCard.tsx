@@ -100,7 +100,7 @@ export default function PhotoCard({ photo, index }: PhotoCardProps) {
         >
           <div className="flex items-center gap-2">
             {photo.commentCount !== undefined && (
-              <span className="flex items-center gap-1 text-white text-[11px]">
+              <span className="flex items-center gap-1 text-white text-sm">
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
                     d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -109,7 +109,7 @@ export default function PhotoCard({ photo, index }: PhotoCardProps) {
               </span>
             )}
             {photo.favoriteCount !== undefined && photo.favoriteCount > 0 && (
-              <span className="flex items-center gap-1 text-white text-[11px]">
+              <span className="flex items-center gap-1 text-white text-sm">
                 <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} stroke="currentColor"
                     d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
@@ -130,14 +130,14 @@ export default function PhotoCard({ photo, index }: PhotoCardProps) {
               {photo.tags.slice(0, 3).map((tag) => (
                 <span
                   key={tag}
-                  className="px-2 py-0.5 rounded-full text-[10px] text-white"
+                  className="px-2 py-0.5 rounded-full text-xs text-white"
                   style={{ background: "rgba(255,255,255,0.15)" }}
                 >
                   {tag}
                 </span>
               ))}
               {photo.tags.length > 3 && (
-                <span className="text-[10px] text-white/50">
+                <span className="text-xs text-white/50">
                   +{photo.tags.length - 3}
                 </span>
               )}

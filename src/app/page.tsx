@@ -275,10 +275,10 @@ export default function Home() {
             <div className="flex items-center gap-2">
               {user ? (
                 <>
-                  <span className="text-sm text-[#B8B8B8]">{username}</span>
+                  <span className="text-base text-[#B8B8B8]">{username}</span>
                   <button
                     onClick={signOut}
-                    className="h-11 px-5 text-white rounded-full hover:opacity-90 transition-opacity text-sm font-medium cursor-pointer"
+                    className="h-11 px-5 text-white rounded-full hover:opacity-90 active:scale-95 transition-all text-base font-medium cursor-pointer"
                     style={{ background: "rgba(255,255,255,0.1)", boxShadow: "0 6px 20px rgba(0,0,0,0.35)" }}
                   >
                     退出登录
@@ -287,7 +287,7 @@ export default function Home() {
               ) : (
                 <button
                   onClick={() => setAuthOpen(true)}
-                  className="h-11 px-5 bg-[#7EA9FF] text-white rounded-full hover:opacity-90 transition-opacity text-sm font-medium cursor-pointer"
+                  className="h-11 px-5 bg-[#7EA9FF] text-white rounded-full hover:opacity-90 active:scale-95 transition-all text-base font-medium cursor-pointer"
                   style={{ boxShadow: "0 6px 20px rgba(0,0,0,0.35)" }}
                 >
                   注册 / 登录
@@ -318,7 +318,7 @@ export default function Home() {
               value={search}
               onChange={(e) => onSearchChange(e.target.value)}
               placeholder="搜索照片名称或描述..."
-              className="w-full h-11 pl-11 pr-4 rounded-full text-sm focus:outline-none transition-shadow placeholder-[#666666] text-[#ECECEC]"
+              className="w-full h-11 pl-11 pr-4 rounded-full text-base focus:outline-none transition-shadow placeholder-[#666666] text-[#ECECEC]"
               style={{
                 background: "rgba(255,255,255,0.05)",
                 border: "1px solid rgba(255,255,255,0.08)",
@@ -340,7 +340,7 @@ export default function Home() {
                   <button
                     key={tag}
                     onClick={() => toggleTag(tag)}
-                    className="shrink-0 h-8 px-3.5 rounded-full text-xs font-medium transition-all cursor-pointer"
+                    className="shrink-0 h-8 px-3.5 rounded-full text-sm font-medium transition-all cursor-pointer hover:brightness-125 active:scale-95"
                     style={{
                       background: active
                         ? "#7EA9FF"
@@ -380,7 +380,7 @@ export default function Home() {
                 : "rgba(60,60,60,0.3)",
             }}
           >
-            <p className="text-[#B8B8B8] text-sm">
+            <p className="text-[#B8B8B8] text-base">
               拖拽照片到这里，或点击选择文件
             </p>
           </div>
@@ -410,7 +410,7 @@ export default function Home() {
                 "0 20px 60px rgba(0,0,0,0.55), 0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)",
             }}
           >
-            <h3 className="font-semibold text-[#ECECEC] mb-4 text-lg">
+            <h3 className="font-semibold text-[#ECECEC] mb-4 text-xl">
               已选择 {selectedFiles.length} 张照片
             </h3>
 
@@ -437,7 +437,7 @@ export default function Home() {
               value={uploadTitle}
               onChange={(e) => setUploadTitle(e.target.value)}
               placeholder="标题（可选）..."
-              className="w-full h-11 px-4 rounded-full text-sm focus:outline-none mb-3 placeholder-[#666666] text-[#ECECEC]"
+              className="w-full h-11 px-4 rounded-full text-base focus:outline-none mb-3 placeholder-[#666666] text-[#ECECEC]"
               style={{
                 background: "rgba(255,255,255,0.05)",
                 border: "1px solid rgba(255,255,255,0.08)",
@@ -450,7 +450,7 @@ export default function Home() {
               onChange={(e) => setUploadDesc(e.target.value)}
               placeholder="添加描述（可选）..."
               rows={2}
-              className="w-full px-4 py-3 rounded-2xl text-sm focus:outline-none resize-none mb-3 placeholder-[#666666] text-[#ECECEC]"
+              className="w-full px-4 py-3 rounded-2xl text-base focus:outline-none resize-none mb-3 placeholder-[#666666] text-[#ECECEC]"
               style={{
                 background: "rgba(255,255,255,0.05)",
                 border: "1px solid rgba(255,255,255,0.08)",
@@ -462,7 +462,7 @@ export default function Home() {
               {uploadTags.map((tag) => (
                 <span
                   key={tag}
-                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs"
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm"
                   style={{
                     background: "rgba(126,169,255,0.2)",
                     color: "#7EA9FF",
@@ -471,7 +471,7 @@ export default function Home() {
                   {tag}
                   <button
                     onClick={() => removeUploadTag(tag)}
-                    className="hover:opacity-70 cursor-pointer text-sm"
+                    className="hover:opacity-70 cursor-pointer text-base"
                   >
                     ×
                   </button>
@@ -490,7 +490,7 @@ export default function Home() {
                   }
                 }}
                 placeholder="添加标签，回车确认..."
-                className="flex-1 h-11 px-4 rounded-full text-sm focus:outline-none placeholder-[#666666] text-[#ECECEC]"
+                className="flex-1 h-11 px-4 rounded-full text-base focus:outline-none placeholder-[#666666] text-[#ECECEC]"
                 style={{
                   background: "rgba(255,255,255,0.05)",
                   border: "1px solid rgba(255,255,255,0.08)",
@@ -498,7 +498,7 @@ export default function Home() {
               />
               <button
                 onClick={addUploadTag}
-                className="h-11 px-4 rounded-full text-sm text-[#B8B8B8] hover:text-white transition-colors cursor-pointer"
+                className="h-11 px-4 rounded-full text-base text-[#B8B8B8] hover:text-white hover:brightness-125 active:scale-95 transition-all cursor-pointer"
                 style={{ background: "rgba(255,255,255,0.08)" }}
               >
                 添加
@@ -510,7 +510,7 @@ export default function Home() {
               <button
                 onClick={submitUpload}
                 disabled={uploading}
-                className="flex-1 h-11 bg-[#7EA9FF] text-white rounded-full hover:opacity-90 disabled:opacity-50 transition-opacity text-sm font-medium cursor-pointer"
+                className="flex-1 h-11 bg-[#7EA9FF] text-white rounded-full hover:opacity-90 active:scale-95 disabled:opacity-50 transition-all text-base font-medium cursor-pointer"
                 style={{ boxShadow: "0 6px 20px rgba(0,0,0,0.35)" }}
               >
                 {uploading ? "上传中..." : "确认上传"}
@@ -518,7 +518,7 @@ export default function Home() {
               <button
                 onClick={cancelUpload}
                 disabled={uploading}
-                className="h-11 px-5 rounded-full text-sm text-[#B8B8B8] hover:text-white transition-colors cursor-pointer disabled:opacity-50"
+                className="h-11 px-5 rounded-full text-base text-[#B8B8B8] hover:text-white active:scale-95 transition-all cursor-pointer disabled:opacity-50"
                 style={{ background: "rgba(255,255,255,0.08)" }}
               >
                 取消
@@ -587,18 +587,18 @@ export default function Home() {
                 strokeLinejoin="round"
               />
             </svg>
-            <p className="text-[#ECECEC] text-base font-medium mb-1">
+            <p className="text-[#ECECEC] text-lg font-medium mb-1">
               {search || activeTags.length > 0
                 ? "没有匹配的照片"
                 : "拖拽或点击上传第一张照片"}
             </p>
-            <p className="text-[#B8B8B8] text-sm">
+            <p className="text-[#B8B8B8] text-base">
               支持 JPG、PNG、GIF、WebP 格式
             </p>
           </div>
         ) : (
-          /* Photo grid */
-          <div className="flex flex-wrap gap-4 animate-fadeInUp" key={view}>
+          /* Photo grid — key includes filters so grid remounts (re-animates) on tag/search/page change */
+          <div className="flex flex-wrap gap-4 animate-fadeInUp" key={`${view}-${search}-${activeTags.join(',')}-${page}`}>
             {photos.map((photo, i) => (
               <div key={photo.id} className="w-[calc(50%-0.5rem)] md:w-[calc(33.33%-0.67rem)]">
                 <PhotoCard photo={photo} index={i} />
@@ -624,7 +624,7 @@ export default function Home() {
           <button
             onClick={() => goToPage(page - 1)}
             disabled={page <= 1}
-            className="h-8 w-8 flex items-center justify-center rounded-full text-sm disabled:opacity-25 hover:bg-white/10 transition-colors"
+            className="h-8 w-8 flex items-center justify-center rounded-full text-base disabled:opacity-25 hover:bg-white/10 transition-colors"
             style={{ color: "#B8B8B8" }}
           >
             ‹
@@ -633,14 +633,14 @@ export default function Home() {
           {/* Page numbers */}
           {generatePages(page, totalPages).map((p, i) =>
             p === "..." ? (
-              <span key={`dot-${i}`} className="w-8 text-center text-xs" style={{ color: "#666666" }}>
+              <span key={`dot-${i}`} className="w-8 text-center text-sm" style={{ color: "#666666" }}>
                 ...
               </span>
             ) : (
               <button
                 key={p}
                 onClick={() => goToPage(p as number)}
-                className="h-8 w-8 flex items-center justify-center rounded-full text-xs transition-all"
+                className="h-8 w-8 flex items-center justify-center rounded-full text-sm transition-all"
                 style={{
                   background: p === page ? "rgba(126,169,255,0.25)" : "transparent",
                   color: p === page ? "#7EA9FF" : "#B8B8B8",
@@ -656,14 +656,14 @@ export default function Home() {
           <button
             onClick={() => goToPage(page + 1)}
             disabled={page >= totalPages}
-            className="h-8 w-8 flex items-center justify-center rounded-full text-sm disabled:opacity-25 hover:bg-white/10 transition-colors"
+            className="h-8 w-8 flex items-center justify-center rounded-full text-base disabled:opacity-25 hover:bg-white/10 transition-colors"
             style={{ color: "#B8B8B8" }}
           >
             ›
           </button>
 
           {/* Total + Jump */}
-          <span className="text-xs ml-3" style={{ color: "#666666" }}>
+          <span className="text-sm ml-3" style={{ color: "#666666" }}>
             共 {total} 张
           </span>
           <form
@@ -684,7 +684,7 @@ export default function Home() {
               value={jumpInput}
               onChange={(e) => setJumpInput(e.target.value)}
               placeholder={`${page}/${totalPages}`}
-              className="h-8 w-14 px-2 rounded-full text-center text-xs focus:outline-none"
+              className="h-8 w-14 px-2 rounded-full text-center text-sm focus:outline-none"
               style={{
                 background: "rgba(255,255,255,0.05)",
                 border: "1px solid rgba(255,255,255,0.08)",
@@ -693,7 +693,7 @@ export default function Home() {
             />
             <button
               type="submit"
-              className="h-8 px-3 rounded-full text-xs hover:bg-white/10 transition-colors"
+              className="h-8 px-3 rounded-full text-sm hover:bg-white/10 transition-colors"
               style={{ color: "#B8B8B8" }}
             >
               跳转

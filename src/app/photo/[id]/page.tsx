@@ -197,7 +197,7 @@ export default function PhotoDetail() {
   if (!photo) return (
     <div className="flex-1 flex flex-col items-center justify-center gap-4">
       <p className="text-[#B8B8B8]">照片不存在</p>
-      <Link href="/" className="text-[#7EA9FF] hover:underline text-sm">返回相册</Link>
+      <Link href="/" className="text-[#7EA9FF] hover:underline text-base">返回相册</Link>
     </div>
   );
 
@@ -215,29 +215,37 @@ export default function PhotoDetail() {
     <div className="flex flex-col h-screen-dynamic overflow-hidden safe-top safe-bottom">
       {/* ═══ Top bar ═══ */}
       <div className="shrink-0 z-10" style={glassBar}>
-        <div className="flex items-center px-5 py-2.5 gap-3">
-          <Link href="/" className="text-sm text-[#B8B8B8] hover:text-white transition-colors shrink-0">← 返回</Link>
+        <div className="flex items-center px-4 py-1.5 gap-2">
+          <Link href="/"
+            className="h-8 px-3 rounded-full text-sm flex items-center gap-1.5 shrink-0 transition-all active:scale-95 cursor-pointer"
+            style={{ background: "rgba(255,255,255,0.08)", color: "#B8B8B8" }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = "#FFFFFF"; e.currentTarget.style.background = "rgba(255,255,255,0.16)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = "#B8B8B8"; e.currentTarget.style.background = "rgba(255,255,255,0.08)"; }}>
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+            返回
+          </Link>
           <div className="flex-1 flex flex-col items-center min-w-0">
-            <p className="text-xs text-[#ECECEC] font-medium truncate max-w-[200px]">
+            <p className="text-sm text-[#ECECEC] font-medium truncate max-w-[200px]">
               {photo.title || photo.description || photo.filename}
             </p>
             {Array.isArray(photo.tags) && photo.tags.length > 0 && (
               <div className="flex gap-1 mt-0.5">
                 {photo.tags.slice(0, 3).map((tag) => (
                   <span key={tag} onClick={() => goToTag(tag)}
-                    className="px-1.5 py-0.5 rounded-full text-[10px] cursor-pointer"
+                    className="px-1.5 py-0.5 rounded-full text-[11px] cursor-pointer hover:brightness-150 active:scale-95 transition-all"
                     style={{ background: "rgba(255,255,255,0.1)", color: "#B8B8B8" }}>#{tag}</span>
                 ))}
               </div>
             )}
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <span className="text-xs text-[#666666]">{currentIndex + 1}/{allPhotos.length}</span>
+            <span className="text-sm text-[#666666]">{currentIndex + 1}/{allPhotos.length}</span>
             <button onClick={handleDownload}
-              className="text-xs h-8 px-3 rounded-full text-[#ECECEC] hover:text-white active:scale-95 transition-transform cursor-pointer"
+              className="text-sm h-8 px-3 rounded-full text-[#ECECEC] hover:text-white hover:brightness-125 active:scale-95 transition-all cursor-pointer"
               style={{ background: "rgba(255,255,255,0.08)" }}>下载</button>
             <button onClick={handleDelete} disabled={deleting}
-              className="text-xs h-8 px-3 rounded-full text-white hover:opacity-90 active:scale-95 disabled:opacity-50 transition-transform cursor-pointer"
+              className="text-sm h-8 px-3 rounded-full text-white hover:opacity-90 active:scale-95 disabled:opacity-50 transition-transform cursor-pointer"
               style={{ background: "#FF6A6A" }}>{deleting ? "删" : "删除"}</button>
           </div>
         </div>
@@ -260,18 +268,18 @@ export default function PhotoDetail() {
       {/* ═══ Nav arrows ═══ */}
       {prevPhoto && (
         <Link href={`/photo/${prevPhoto.id}`}
-          className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full text-white text-xl hover:scale-110 active:scale-95 transition-transform z-10"
+          className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full text-white text-xl hover:scale-110 hover:bg-white/20 active:scale-95 transition-all z-10"
           style={{ background: "rgba(255,255,255,0.1)" }}>‹</Link>
       )}
       {nextPhoto && (
         <Link href={`/photo/${nextPhoto.id}`}
-          className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full text-white text-xl hover:scale-110 active:scale-95 transition-transform z-10"
+          className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full text-white text-xl hover:scale-110 hover:bg-white/20 active:scale-95 transition-all z-10"
           style={{ background: "rgba(255,255,255,0.1)" }}>›</Link>
       )}
 
       {/* ═══ Comments floating panel ═══ */}
       <div ref={commentsRef}
-        className="absolute bottom-20 right-4 w-72 max-h-[50vh] flex flex-col rounded-2xl overflow-hidden z-20"
+        className="absolute bottom-14 right-4 w-72 max-h-[50vh] flex flex-col rounded-2xl overflow-hidden z-20"
         style={{
           background: "rgba(35,35,35,0.85)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
           border: "1px solid rgba(255,255,255,0.08)", boxShadow: "0 12px 40px rgba(0,0,0,0.5)",
@@ -280,21 +288,21 @@ export default function PhotoDetail() {
           transition: "opacity 0.25s cubic-bezier(0.34,1.56,0.64,1), transform 0.25s cubic-bezier(0.34,1.56,0.64,1)",
         }}>
         <div ref={commentsListRef} className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
-          <h3 className="text-sm font-medium text-[#ECECEC]">评论 {commentCount > 0 && `(${commentCount})`}</h3>
+          <h3 className="text-base font-medium text-[#ECECEC]">评论 {commentCount > 0 && `(${commentCount})`}</h3>
           {comments.length === 0 ? (
-            <p className="text-xs text-[#666666] py-4 text-center">暂无评论</p>
+            <p className="text-sm text-[#666666] py-4 text-center">暂无评论</p>
           ) : (
             comments.map((c) => (
               <div key={c.id} className="group">
                 <div className="flex items-center gap-1.5 mb-1">
-                  <span className="text-[11px] text-[#7EA9FF] font-medium">{c.username || "用户"}</span>
-                  <span className="text-[10px] text-[#666666]">
+                  <span className="text-xs text-[#7EA9FF] font-medium">{c.username || "用户"}</span>
+                  <span className="text-[11px] text-[#666666]">
                     {new Date(c.created_at).toLocaleString("zh-CN", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" })}
                   </span>
                 </div>
-                <p className="text-xs text-[#ECECEC] leading-relaxed">{c.content}</p>
+                <p className="text-sm text-[#ECECEC] leading-relaxed">{c.content}</p>
                 <button onClick={() => deleteComment(c.id)}
-                  className="text-[10px] text-[#666666] hover:text-[#FF6A6A] opacity-0 group-hover:opacity-100 transition-opacity mt-0.5">删除</button>
+                  className="text-[11px] text-[#666666] hover:text-[#FF6A6A] opacity-0 group-hover:opacity-100 transition-opacity mt-0.5">删除</button>
               </div>
             ))
           )}
@@ -304,36 +312,36 @@ export default function PhotoDetail() {
             onChange={(e) => setCommentInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") submitComment(); }}
             placeholder="添加评论..." maxLength={500}
-            className="flex-1 h-9 px-3 rounded-full text-xs focus:outline-none placeholder-[#666666] text-[#ECECEC]"
+            className="flex-1 h-9 px-3 rounded-full text-sm focus:outline-none placeholder-[#666666] text-[#ECECEC]"
             style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }} />
           <button onClick={submitComment} disabled={commenting || !commentInput.trim()}
-            className="h-9 px-4 rounded-full text-xs disabled:opacity-40 transition-opacity"
+            className="h-9 px-4 rounded-full text-sm disabled:opacity-40 transition-all hover:brightness-110 active:scale-95 cursor-pointer"
             style={{ background: "#7EA9FF", color: "#fff" }}>{commenting ? "..." : "发送"}</button>
         </div>
       </div>
 
       {/* ═══ Bottom bar ═══ */}
-      <div className="shrink-0 z-10" style={glassBarBottom}>
-        <div className="flex items-center justify-center gap-2 px-5 py-2.5">
+      <div className="shrink-0 z-10 relative" style={glassBarBottom}>
+        <div className="flex items-center justify-center gap-2 px-4 py-1.5">
           {photo.description && (
             <button onClick={() => setShowDesc(!showDesc)}
-              className="h-8 px-3 rounded-full text-xs transition-all active:scale-95 flex items-center gap-1.5"
+              className="h-8 px-3 rounded-full text-sm transition-all active:scale-95 flex items-center gap-1.5 hover:brightness-125"
               style={{ background: showDesc ? "rgba(126,169,255,0.2)" : "rgba(255,255,255,0.06)", color: showDesc ? "#7EA9FF" : "#B8B8B8" }}>
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h10" /></svg>
-              {showDesc ? "收起描述" : "描述"}
+              {showDesc ? "收起" : "描述"}
             </button>
           )}
           <button data-comment-toggle
             onClick={() => { if (!user) { setAuthOpen(true); return; } setShowComments(prev => { if (!prev) fetchComments(); return !prev; }); }}
-            className="h-8 px-3 rounded-full text-xs transition-all active:scale-95 flex items-center gap-1.5"
+            className="h-8 px-3 rounded-full text-sm transition-all active:scale-95 flex items-center gap-1.5 hover:brightness-125"
             style={{ background: showComments ? "rgba(126,169,255,0.2)" : "rgba(255,255,255,0.06)", color: showComments ? "#7EA9FF" : "#B8B8B8" }}>
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
             评论{commentCount > 0 && ` ${commentCount}`}
           </button>
           <button onClick={toggleFavorite} disabled={favLoading}
-            className="h-8 px-3 rounded-full text-xs transition-all active:scale-95 flex items-center gap-1.5"
+            className="h-8 px-3 rounded-full text-sm transition-all active:scale-95 flex items-center gap-1.5 hover:brightness-125"
             style={{ background: favorited ? "rgba(255,106,106,0.2)" : "rgba(255,255,255,0.06)", color: favorited ? "#FF6A6A" : "#B8B8B8" }}>
             <svg className="w-3.5 h-3.5" fill={favorited ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
@@ -341,8 +349,9 @@ export default function PhotoDetail() {
           </button>
         </div>
         {showDesc && photo.description && (
-          <div className="px-5 pb-2 text-center">
-            <p className="text-xs text-[#ECECEC] leading-relaxed max-w-lg mx-auto line-clamp-2">{photo.description}</p>
+          <div className="absolute bottom-full left-0 right-0 px-4 py-1.5 text-center"
+            style={{ background: "rgba(30,30,30,0.55)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+            <p className="text-sm text-[#ECECEC] leading-relaxed max-w-lg mx-auto line-clamp-2">{photo.description}</p>
           </div>
         )}
       </div>

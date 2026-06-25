@@ -79,7 +79,7 @@ export default function SegmentedControl({ items, active, onChange }: Props) {
             key={item.key}
             ref={setRef(item.key)}
             onClick={() => onChange(item.key)}
-            className="relative z-10 flex items-center gap-2 px-4 h-9 rounded-full text-sm font-medium transition-colors cursor-pointer"
+            className="relative z-10 flex items-center gap-2 px-4 h-9 rounded-full text-base font-medium transition-all cursor-pointer hover:brightness-150"
             style={{
               color: isActive ? "#FFFFFF" : "#888888",
             }}

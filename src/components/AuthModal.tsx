@@ -74,28 +74,28 @@ export default function AuthModal({ open, onClose }: Props) {
       >
         {mode === "login" ? (
           <>
-            <h2 className="text-lg font-semibold text-white mb-5">登录</h2>
+            <h2 className="text-xl font-semibold text-white mb-5">登录</h2>
             <form onSubmit={handleLogin} className="flex flex-col gap-3">
               <input
                 type="text" value={username} onChange={(e) => setUsername(e.target.value)}
                 placeholder="用户名" autoComplete="username"
-                className="h-11 px-4 rounded-full text-sm focus:outline-none placeholder-[#666666]"
+                className="h-11 px-4 rounded-full text-base focus:outline-none placeholder-[#666666]"
                 style={inputStyle}
               />
               <input
                 type="password" value={password} onChange={(e) => setPassword(e.target.value)}
                 placeholder="密码" autoComplete="current-password"
-                className="h-11 px-4 rounded-full text-sm focus:outline-none placeholder-[#666666]"
+                className="h-11 px-4 rounded-full text-base focus:outline-none placeholder-[#666666]"
                 style={inputStyle}
               />
-              {error && <p className="text-xs text-[#FF6A6A]">{error}</p>}
+              {error && <p className="text-sm text-[#FF6A6A]">{error}</p>}
               <button type="submit" disabled={loading}
-                className="h-11 rounded-full text-sm font-medium transition-opacity disabled:opacity-50"
+                className="h-11 rounded-full text-base font-medium transition-all disabled:opacity-50 hover:brightness-110 active:scale-95 cursor-pointer"
                 style={{ background: "#7EA9FF", color: "#fff" }}>
                 {loading ? "..." : "登录"}
               </button>
             </form>
-            <p className="text-xs text-[#666666] text-center mt-4">
+            <p className="text-sm text-[#666666] text-center mt-4">
               还没有账号？
               <button onClick={() => switchMode("register")}
                 className="text-[#7EA9FF] hover:underline ml-1">注册</button>
@@ -103,34 +103,34 @@ export default function AuthModal({ open, onClose }: Props) {
           </>
         ) : (
           <>
-            <h2 className="text-lg font-semibold text-white mb-5">注册</h2>
+            <h2 className="text-xl font-semibold text-white mb-5">注册</h2>
             <form onSubmit={handleRegister} className="flex flex-col gap-3">
               <input
                 type="text" value={username} onChange={(e) => setUsername(e.target.value)}
                 placeholder="用户名" autoComplete="username"
-                className="h-11 px-4 rounded-full text-sm focus:outline-none placeholder-[#666666]"
+                className="h-11 px-4 rounded-full text-base focus:outline-none placeholder-[#666666]"
                 style={inputStyle}
               />
               <input
                 type="password" value={password} onChange={(e) => setPassword(e.target.value)}
                 placeholder="密码（至少6位）" autoComplete="new-password"
-                className="h-11 px-4 rounded-full text-sm focus:outline-none placeholder-[#666666]"
+                className="h-11 px-4 rounded-full text-base focus:outline-none placeholder-[#666666]"
                 style={inputStyle}
               />
               <input
                 type="password" value={password2} onChange={(e) => setPassword2(e.target.value)}
                 placeholder="确认密码" autoComplete="new-password"
-                className="h-11 px-4 rounded-full text-sm focus:outline-none placeholder-[#666666]"
+                className="h-11 px-4 rounded-full text-base focus:outline-none placeholder-[#666666]"
                 style={inputStyle}
               />
-              {error && <p className="text-xs text-[#FF6A6A]">{error}</p>}
+              {error && <p className="text-sm text-[#FF6A6A]">{error}</p>}
               <button type="submit" disabled={loading}
-                className="h-11 rounded-full text-sm font-medium transition-opacity disabled:opacity-50"
+                className="h-11 rounded-full text-base font-medium transition-all disabled:opacity-50 hover:brightness-110 active:scale-95 cursor-pointer"
                 style={{ background: "#7EA9FF", color: "#fff" }}>
                 {loading ? "..." : "注册"}
               </button>
             </form>
-            <p className="text-xs text-[#666666] text-center mt-4">
+            <p className="text-sm text-[#666666] text-center mt-4">
               已有账号？
               <button onClick={() => switchMode("login")}
                 className="text-[#7EA9FF] hover:underline ml-1">去登录</button>
