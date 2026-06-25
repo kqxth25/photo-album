@@ -19,6 +19,8 @@ interface Photo {
   tags: string[];
   created_at: string;
   publicUrl: string;
+  prevId: string | null;
+  nextId: string | null;
 }
 
 interface Comment {
@@ -33,7 +35,6 @@ export default function PhotoDetail() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const [photo, setPhoto] = useState<Photo | null>(null);
-  const [allPhotos, setAllPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
 
@@ -55,14 +56,9 @@ export default function PhotoDetail() {
 
   const fetchPhoto = useCallback(async () => {
     try {
-      const [photoRes, listRes] = await Promise.all([
-        fetch(`/api/photos/${id}`),
-        fetch("/api/photos"),
-      ]);
-      if (!photoRes.ok) { setPhoto(null); return; }
-      setPhoto(await photoRes.json());
-      const listData = await listRes.json();
-      setAllPhotos(listData.photos || listData);
+      const res = await fetch(`/api/photos/${id}`);
+      if (!res.ok) { setPhoto(null); setLoading(false); return; }
+      setPhoto(await res.json());
     } catch { /* ignore */ }
     finally { setLoading(false); }
   }, [id]);
@@ -88,9 +84,8 @@ export default function PhotoDetail() {
   useEffect(() => { fetchPhoto(); fetchComments(); if (user) checkFavorite(); },
     [fetchPhoto, fetchComments, checkFavorite]);
 
-  const currentIndex = allPhotos.findIndex((p) => p.id === id);
-  const prevPhoto = currentIndex > 0 ? allPhotos[currentIndex - 1] : null;
-  const nextPhoto = currentIndex < allPhotos.length - 1 ? allPhotos[currentIndex + 1] : null;
+  const prevId = photo?.prevId || null;
+  const nextId = photo?.nextId || null;
 
   const handleDelete = async () => {
     if (!confirm("确定删除？")) return;
@@ -185,13 +180,13 @@ export default function PhotoDetail() {
   // Keyboard
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft" && prevPhoto) router.push(`/photo/${prevPhoto.id}`);
-      else if (e.key === "ArrowRight" && nextPhoto) router.push(`/photo/${nextPhoto.id}`);
+      if (e.key === "ArrowLeft" && prevId) router.push(`/photo/${prevId}`);
+      else if (e.key === "ArrowRight" && nextId) router.push(`/photo/${nextId}`);
       else if (e.key === "Escape") { if (showComments) setShowComments(false); else router.push("/"); }
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, [prevPhoto, nextPhoto, router, showComments]);
+  }, [prevId, nextId, router, showComments]);
 
   if (loading) return <div className="flex-1 flex items-center justify-center"><p className="text-[#B8B8B8]">加载中...</p></div>;
   if (!photo) return (
@@ -240,7 +235,6 @@ export default function PhotoDetail() {
             )}
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <span className="text-sm text-[#666666]">{currentIndex + 1}/{allPhotos.length}</span>
             <button onClick={handleDownload}
               className="text-sm h-8 px-3 rounded-full text-[#ECECEC] hover:text-white hover:brightness-125 active:scale-95 transition-all cursor-pointer"
               style={{ background: "rgba(255,255,255,0.08)" }}>下载</button>
@@ -266,13 +260,13 @@ export default function PhotoDetail() {
       </div>
 
       {/* ═══ Nav arrows ═══ */}
-      {prevPhoto && (
-        <Link href={`/photo/${prevPhoto.id}`}
+      {prevId && (
+        <Link href={`/photo/${prevId}`}
           className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full text-white text-xl hover:scale-110 hover:bg-white/20 active:scale-95 transition-all z-10"
           style={{ background: "rgba(255,255,255,0.1)" }}>‹</Link>
       )}
-      {nextPhoto && (
-        <Link href={`/photo/${nextPhoto.id}`}
+      {nextId && (
+        <Link href={`/photo/${nextId}`}
           className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full text-white text-xl hover:scale-110 hover:bg-white/20 active:scale-95 transition-all z-10"
           style={{ background: "rgba(255,255,255,0.1)" }}>›</Link>
       )}
@@ -359,10 +353,4 @@ export default function PhotoDetail() {
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </div>
   );
-}
-
-function formatSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }

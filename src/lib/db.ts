@@ -89,6 +89,35 @@ export async function getPhotoById(id: string): Promise<Photo | null> {
   return data as Photo;
 }
 
+/** Get IDs of neighboring photos for prev/next navigation (newest-first order) */
+export async function getNeighborIds(photo: Photo): Promise<{
+  prevId: string | null;
+  nextId: string | null;
+}> {
+  const supabase = getSupabaseAdmin();
+
+  // "prev" = newer photo (created after this one, closest in time)
+  const { data: newer } = await supabase
+    .from("photos")
+    .select("id")
+    .gt("created_at", photo.created_at)
+    .order("created_at", { ascending: true })
+    .limit(1);
+
+  // "next" = older photo (created before this one, closest in time)
+  const { data: older } = await supabase
+    .from("photos")
+    .select("id")
+    .lt("created_at", photo.created_at)
+    .order("created_at", { ascending: false })
+    .limit(1);
+
+  return {
+    prevId: newer?.[0]?.id || null,
+    nextId: older?.[0]?.id || null,
+  };
+}
+
 export async function insertPhoto(photo: Photo): Promise<void> {
   const { error } = await getSupabaseAdmin().from("photos").insert(photo);
   if (error) {
