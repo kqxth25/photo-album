@@ -23,9 +23,11 @@
 }
 
 /* ═══ Body: wallpaper background ═══ */
-/* Hide system cursor globally — covers all elements */
-html, html *, body, body * {
-  cursor: none !important;
+/* Hide system cursor — desktop only */
+@media (pointer: fine) {
+  html, html *, body, body * {
+    cursor: none !important;
+  }
 }
 
 body {

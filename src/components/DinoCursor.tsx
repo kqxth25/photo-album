@@ -44,6 +44,11 @@ export default function DinoCursor() {
   const rippleRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Don't render cursor on touch devices
+    if (typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches) {
+      return;
+    }
+
     const outer = outerRef.current;
     const inner = innerRef.current;
     const ripple = rippleRef.current;
