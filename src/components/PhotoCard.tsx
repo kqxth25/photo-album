@@ -49,7 +49,6 @@ export default function PhotoCard({ photo, index }: PhotoCardProps) {
       onMouseMove={tilt.onMouseMove}
       onMouseLeave={tilt.onMouseLeave}
       style={entryStyle(progress)}
-      className="break-inside-avoid"
     >
       <Link
         href={`/photo/${photo.id}`}

@@ -598,9 +598,11 @@ export default function Home() {
           </div>
         ) : (
           /* Photo grid */
-          <div className="columns-2 md:columns-3 gap-4 space-y-4 animate-fadeInUp" key={view}>
+          <div className="flex flex-wrap gap-4 animate-fadeInUp" key={view}>
             {photos.map((photo, i) => (
-              <PhotoCard key={photo.id} photo={photo} index={i} />
+              <div key={photo.id} className="w-[calc(50%-0.5rem)] md:w-[calc(33.33%-0.67rem)]">
+                <PhotoCard photo={photo} index={i} />
+              </div>
             ))}
           </div>
         )}
