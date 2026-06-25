@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Allow sharp native module
+  serverExternalPackages: ["sharp"],
 };
 
 export default nextConfig;

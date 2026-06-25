@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# photo album data
+/data/photos.db
+/public/uploads/*
+!/public/uploads/.gitkeep
+
+# claude
+/CLAUDE.md
