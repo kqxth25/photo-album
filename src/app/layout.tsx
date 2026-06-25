@@ -27,7 +27,13 @@ export default function RootLayout({
       lang="zh-CN"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full">
+        {/* Layer 2b: Noise texture (above glass, below UI) */}
+        <div className="noise-texture" />
+
+        {/* Layer 3+4: UI Content */}
+        <div className="ui-layer">{children}</div>
+      </body>
     </html>
   );
 }

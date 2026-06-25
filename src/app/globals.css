@@ -1,26 +1,100 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --brand: #7ea9ff;
+  --success: #34d16e;
+  --danger: #ff6a6a;
+  --warning: #ffb84d;
+  --text-primary: #ffffff;
+  --text-secondary: #ececec;
+  --text-tertiary: #b8b8b8;
+  --text-disabled: #666666;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: #2c2a2c;
+  --color-foreground: #ffffff;
+  --color-brand: var(--brand);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --color-warning: var(--warning);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ═══ Body: wallpaper background ═══ */
+body {
+  color: #ffffff;
+  font-family: "PingFang SC", "HarmonyOS Sans", "MiSans", "SF Pro Display",
+    Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background-image: url("/wallpaper/melody.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  position: relative;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Layer 1: vignette over wallpaper */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 30%,
+    rgba(0, 0, 0, 0.15) 65%,
+    rgba(0, 0, 0, 0.4) 100%
+  );
+}
+
+/* Layer 2: glass overlay */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background-color: rgba(35, 35, 35, 0.48);
+  backdrop-filter: blur(24px) saturate(120%) brightness(90%);
+  -webkit-backdrop-filter: blur(24px) saturate(120%) brightness(90%);
+}
+
+/* Noise texture injected via JS (avoid pseudo-element limit) */
+.noise-texture {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+  background-repeat: repeat;
+}
+
+/* Content floats above glass */
+.ui-layer {
+  position: relative;
+  z-index: 10;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ═══ Scrollbar ═══ */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.18);
 }

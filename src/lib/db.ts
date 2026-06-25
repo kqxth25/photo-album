@@ -8,20 +8,40 @@ export interface Photo {
   size_bytes: number;
   width: number | null;
   height: number | null;
+  description: string | null;
+  tags: string[];
   created_at: string;
 }
 
-export async function getAllPhotos(): Promise<Photo[]> {
-  const { data, error } = await getSupabaseAdmin()
+interface PhotoFilters {
+  search?: string;
+  tag?: string;
+}
+
+export async function getAllPhotos(filters?: PhotoFilters): Promise<Photo[]> {
+  let query = getSupabaseAdmin()
     .from("photos")
     .select("*")
     .order("created_at", { ascending: false });
+
+  if (filters?.search) {
+    const term = `%${filters.search}%`;
+    query = query.or(
+      `filename.ilike.${term},description.ilike.${term}`
+    );
+  }
+
+  if (filters?.tag) {
+    query = query.contains("tags", [filters.tag]);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     console.error("Failed to fetch photos:", error);
     return [];
   }
-  return data as Photo[];
+  return (data || []) as Photo[];
 }
 
 export async function getPhotoById(id: string): Promise<Photo | null> {
@@ -59,4 +79,29 @@ export async function deletePhoto(
   }
 
   return { photo, error: null };
+}
+
+export async function getAllTags(): Promise<string[]> {
+  const { data, error } = await getSupabaseAdmin()
+    .from("photos")
+    .select("tags");
+
+  if (error || !data) return [];
+
+  const tagCounts = new Map<string, number>();
+  for (const row of data) {
+    if (row.tags && Array.isArray(row.tags)) {
+      for (const tag of row.tags) {
+        const trimmed = tag.trim();
+        if (trimmed) {
+          tagCounts.set(trimmed, (tagCounts.get(trimmed) || 0) + 1);
+        }
+      }
+    }
+  }
+
+  // Sort by frequency descending
+  return [...tagCounts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([tag]) => tag);
 }

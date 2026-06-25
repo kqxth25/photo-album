@@ -11,8 +11,10 @@ function withPublicUrl(photo: Photo) {
   return { ...photo, publicUrl: data.publicUrl };
 }
 
-export async function GET() {
-  const photos = await getAllPhotos();
+export async function GET(request: NextRequest) {
+  const search = request.nextUrl.searchParams.get("search") || undefined;
+  const tag = request.nextUrl.searchParams.get("tag") || undefined;
+  const photos = await getAllPhotos({ search, tag });
   return Response.json(photos.map(withPublicUrl));
 }
 
@@ -24,6 +26,14 @@ export async function POST(request: NextRequest) {
     if (!files || files.length === 0) {
       return Response.json({ error: "没有选择文件" }, { status: 400 });
     }
+
+    // Parse description and tags from form data
+    const description = (formData.get("description") as string) || null;
+    const tagsRaw = (formData.get("tags") as string) || "";
+    const tags = tagsRaw
+      .split(/[,，]/)
+      .map((t) => t.trim())
+      .filter((t) => t.length > 0);
 
     const results = [];
 
@@ -40,6 +50,8 @@ export async function POST(request: NextRequest) {
         size_bytes: uploaded.sizeBytes,
         width: uploaded.width,
         height: uploaded.height,
+        description,
+        tags,
         created_at: new Date().toISOString(),
       });
 
@@ -50,6 +62,8 @@ export async function POST(request: NextRequest) {
         sizeBytes: uploaded.sizeBytes,
         width: uploaded.width,
         height: uploaded.height,
+        description,
+        tags,
         publicUrl: uploaded.publicUrl,
       });
     }
