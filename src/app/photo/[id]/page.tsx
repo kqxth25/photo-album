@@ -261,14 +261,16 @@ export default function PhotoDetail() {
         ref={photoRef}
         style={{
           position: "absolute",
-          top: "56px",
-          bottom: "44px",
+          top: "48px",
+          bottom: "0px",
           left: 0,
           right: 0,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           overflow: "hidden",
+          paddingBottom: "48px",
+          boxSizing: "border-box",
         }}
       >
         <img
@@ -377,7 +379,7 @@ export default function PhotoDetail() {
         </div>
         {showDesc && photo.description && (
           <div className="px-5 pb-2 text-center">
-            <p className="text-xs text-[#ECECEC] leading-relaxed max-w-lg mx-auto">{photo.description}</p>
+            <p className="text-xs text-[#ECECEC] leading-relaxed max-w-lg mx-auto line-clamp-2">{photo.description}</p>
           </div>
         )}
       </div>
