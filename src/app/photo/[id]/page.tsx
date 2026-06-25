@@ -39,7 +39,6 @@ export default function PhotoDetail() {
 
   const { user, username: currentUsername } = useAuth();
   const [authOpen, setAuthOpen] = useState(false);
-
   const [showDesc, setShowDesc] = useState(true);
 
   const [comments, setComments] = useState<Comment[]>([]);
@@ -72,10 +71,7 @@ export default function PhotoDetail() {
     try {
       const res = await fetch(`/api/photos/${id}/comments`);
       const data = await res.json();
-      if (Array.isArray(data)) {
-        setComments(data);
-        setCommentCount(data.length);
-      }
+      if (Array.isArray(data)) { setComments(data); setCommentCount(data.length); }
     } catch { /* ignore */ }
   }, [id]);
 
@@ -142,22 +138,21 @@ export default function PhotoDetail() {
     finally { setFavLoading(false); }
   };
 
+  const goToTag = (tag: string) => router.push(`/?tag=${tag}`);
+
   const commentsRef = useRef<HTMLDivElement>(null);
   const commentsListRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll comments to bottom when new ones arrive or panel opens
   useEffect(() => {
     if (showComments && commentsListRef.current) {
       commentsListRef.current.scrollTop = commentsListRef.current.scrollHeight;
     }
   }, [comments, showComments]);
 
-  // Close comments on outside click
   useEffect(() => {
     if (!showComments) return;
     const onMouseDown = (e: MouseEvent) => {
       const target = e.target as Node;
-      // Don't close if clicking the toggle button or inside the panel
       if (commentsRef.current && !commentsRef.current.contains(target)) {
         const btn = document.querySelector("[data-comment-toggle]");
         if (btn && btn.contains(target)) return;
@@ -168,8 +163,7 @@ export default function PhotoDetail() {
     return () => document.removeEventListener("mousedown", onMouseDown);
   }, [showComments]);
 
-  const goToTag = (tag: string) => router.push(`/?tag=${tag}`);
-
+  // Mouse parallax
   useEffect(() => {
     const el = photoRef.current; if (!el) return;
     let tx = 0, ty = 0, cx = 0, cy = 0;
@@ -180,12 +174,7 @@ export default function PhotoDetail() {
     const animate = () => {
       cx += (tx - cx) * 0.08; cy += (ty - cy) * 0.08;
       const img = el.querySelector("img") as HTMLImageElement | null;
-      if (img) {
-        img.style.transform = `translate(${cx}px, ${cy}px)`;
-        img.style.maxWidth = "100%";
-        img.style.maxHeight = "100%";
-        img.style.objectFit = "contain";
-      }
+      if (img) { img.style.transform = `translate(${cx}px, ${cy}px)`; img.style.maxWidth = "100%"; img.style.maxHeight = "100%"; img.style.objectFit = "contain"; }
       rafRef.current = requestAnimationFrame(animate);
     };
     window.addEventListener("mousemove", onMove, { passive: true });
@@ -193,6 +182,7 @@ export default function PhotoDetail() {
     return () => { window.removeEventListener("mousemove", onMove); cancelAnimationFrame(rafRef.current); };
   }, [photo?.id]);
 
+  // Keyboard
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft" && prevPhoto) router.push(`/photo/${prevPhoto.id}`);
@@ -222,13 +212,11 @@ export default function PhotoDetail() {
   } as const;
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
-      {/* Top bar — left: back, center: info, right: actions */}
-      <div className="absolute top-0 left-0 right-0 z-10" style={glassBar}>
+    <div className="flex flex-col h-screen-dynamic overflow-hidden safe-top safe-bottom">
+      {/* ═══ Top bar ═══ */}
+      <div className="shrink-0 z-10" style={glassBar}>
         <div className="flex items-center px-5 py-2.5 gap-3">
-          {/* Left */}
           <Link href="/" className="text-sm text-[#B8B8B8] hover:text-white transition-colors shrink-0">← 返回</Link>
-          {/* Center — filename + tags */}
           <div className="flex-1 flex flex-col items-center min-w-0">
             <p className="text-xs text-[#ECECEC] font-medium truncate max-w-[200px]">
               {photo.title || photo.description || photo.filename}
@@ -243,7 +231,6 @@ export default function PhotoDetail() {
               </div>
             )}
           </div>
-          {/* Right */}
           <div className="flex items-center gap-2 shrink-0">
             <span className="text-xs text-[#666666]">{currentIndex + 1}/{allPhotos.length}</span>
             <button onClick={handleDownload}
@@ -256,23 +243,8 @@ export default function PhotoDetail() {
         </div>
       </div>
 
-      {/* Photo area — full area between bars */}
-      <div
-        ref={photoRef}
-        style={{
-          position: "absolute",
-          top: "48px",
-          bottom: "0px",
-          left: 0,
-          right: 0,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          overflow: "hidden",
-          paddingBottom: "48px",
-          boxSizing: "border-box",
-        }}
-      >
+      {/* ═══ Photo area — flex-1 fills remaining space ═══ */}
+      <div ref={photoRef} className="flex-1 min-h-0 flex items-center justify-center overflow-hidden">
         <img
           src={photo.publicUrl}
           alt={photo.filename}
@@ -285,59 +257,7 @@ export default function PhotoDetail() {
         />
       </div>
 
-      {/* Comments floating panel — bottom-right overlay */}
-      <div ref={commentsRef}
-        className="absolute bottom-20 right-4 w-72 max-h-[50vh] flex flex-col rounded-2xl overflow-hidden z-20"
-        style={{
-          background: "rgba(35,35,35,0.85)",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
-          border: "1px solid rgba(255,255,255,0.08)",
-          boxShadow: "0 12px 40px rgba(0,0,0,0.5)",
-          opacity: showComments ? 1 : 0,
-          transform: showComments ? "scale(1)" : "scale(0.85)",
-          pointerEvents: showComments ? "auto" : "none",
-          transformOrigin: "bottom right",
-          transition: "opacity 0.25s cubic-bezier(0.34,1.56,0.64,1), transform 0.25s cubic-bezier(0.34,1.56,0.64,1)",
-        }}>
-          <div ref={commentsListRef} className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
-            <h3 className="text-sm font-medium text-[#ECECEC]">
-              评论 {commentCount > 0 && `(${commentCount})`}
-            </h3>
-            {comments.length === 0 ? (
-              <p className="text-xs text-[#666666] py-4 text-center">暂无评论</p>
-            ) : (
-              comments.map((c) => (
-                <div key={c.id} className="group">
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <span className="text-[11px] text-[#7EA9FF] font-medium">{c.username || "用户"}</span>
-                    <span className="text-[10px] text-[#666666]">
-                      {new Date(c.created_at).toLocaleString("zh-CN", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" })}
-                    </span>
-                  </div>
-                  <p className="text-xs text-[#ECECEC] leading-relaxed">{c.content}</p>
-                  <button onClick={() => deleteComment(c.id)}
-                    className="text-[10px] text-[#666666] hover:text-[#FF6A6A] opacity-0 group-hover:opacity-100 transition-opacity mt-0.5">
-                    删除
-                  </button>
-                </div>
-              ))
-            )}
-          </div>
-          <div className="p-3 border-t border-white/5 flex gap-2">
-            <input type="text" value={commentInput}
-              onChange={(e) => setCommentInput(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") submitComment(); }}
-              placeholder="添加评论..." maxLength={500}
-              className="flex-1 h-9 px-3 rounded-full text-xs focus:outline-none placeholder-[#666666] text-[#ECECEC]"
-              style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }} />
-            <button onClick={submitComment} disabled={commenting || !commentInput.trim()}
-              className="h-9 px-4 rounded-full text-xs disabled:opacity-40 transition-opacity"
-              style={{ background: "#7EA9FF", color: "#fff" }}>{commenting ? "..." : "发送"}</button>
-          </div>
-        </div>
-
-      {/* Nav arrows */}
+      {/* ═══ Nav arrows ═══ */}
       {prevPhoto && (
         <Link href={`/photo/${prevPhoto.id}`}
           className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full text-white text-xl hover:scale-110 active:scale-95 transition-transform z-10"
@@ -349,8 +269,51 @@ export default function PhotoDetail() {
           style={{ background: "rgba(255,255,255,0.1)" }}>›</Link>
       )}
 
-      {/* Bottom bar — action buttons only */}
-      <div className="absolute bottom-0 left-0 right-0 z-10" style={glassBarBottom}>
+      {/* ═══ Comments floating panel ═══ */}
+      <div ref={commentsRef}
+        className="absolute bottom-20 right-4 w-72 max-h-[50vh] flex flex-col rounded-2xl overflow-hidden z-20"
+        style={{
+          background: "rgba(35,35,35,0.85)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
+          border: "1px solid rgba(255,255,255,0.08)", boxShadow: "0 12px 40px rgba(0,0,0,0.5)",
+          opacity: showComments ? 1 : 0, transform: showComments ? "scale(1)" : "scale(0.85)",
+          pointerEvents: showComments ? "auto" : "none", transformOrigin: "bottom right",
+          transition: "opacity 0.25s cubic-bezier(0.34,1.56,0.64,1), transform 0.25s cubic-bezier(0.34,1.56,0.64,1)",
+        }}>
+        <div ref={commentsListRef} className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
+          <h3 className="text-sm font-medium text-[#ECECEC]">评论 {commentCount > 0 && `(${commentCount})`}</h3>
+          {comments.length === 0 ? (
+            <p className="text-xs text-[#666666] py-4 text-center">暂无评论</p>
+          ) : (
+            comments.map((c) => (
+              <div key={c.id} className="group">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <span className="text-[11px] text-[#7EA9FF] font-medium">{c.username || "用户"}</span>
+                  <span className="text-[10px] text-[#666666]">
+                    {new Date(c.created_at).toLocaleString("zh-CN", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                  </span>
+                </div>
+                <p className="text-xs text-[#ECECEC] leading-relaxed">{c.content}</p>
+                <button onClick={() => deleteComment(c.id)}
+                  className="text-[10px] text-[#666666] hover:text-[#FF6A6A] opacity-0 group-hover:opacity-100 transition-opacity mt-0.5">删除</button>
+              </div>
+            ))
+          )}
+        </div>
+        <div className="p-3 border-t border-white/5 flex gap-2">
+          <input type="text" value={commentInput}
+            onChange={(e) => setCommentInput(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") submitComment(); }}
+            placeholder="添加评论..." maxLength={500}
+            className="flex-1 h-9 px-3 rounded-full text-xs focus:outline-none placeholder-[#666666] text-[#ECECEC]"
+            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }} />
+          <button onClick={submitComment} disabled={commenting || !commentInput.trim()}
+            className="h-9 px-4 rounded-full text-xs disabled:opacity-40 transition-opacity"
+            style={{ background: "#7EA9FF", color: "#fff" }}>{commenting ? "..." : "发送"}</button>
+        </div>
+      </div>
+
+      {/* ═══ Bottom bar ═══ */}
+      <div className="shrink-0 z-10" style={glassBarBottom}>
         <div className="flex items-center justify-center gap-2 px-5 py-2.5">
           {photo.description && (
             <button onClick={() => setShowDesc(!showDesc)}

@@ -1,5 +1,19 @@
 @import "tailwindcss";
 
+/* Dynamic viewport height for mobile Safari */
+.h-screen-dynamic {
+  height: 100vh;
+  height: 100dvh;
+}
+
+/* Safe-area padding for notched iPhones */
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
 :root {
   --brand: #7ea9ff;
   --success: #34d16e;
