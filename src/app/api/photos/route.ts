@@ -12,10 +12,60 @@ function withPublicUrl(photo: Photo) {
 }
 
 export async function GET(request: NextRequest) {
-  const search = request.nextUrl.searchParams.get("search") || undefined;
-  const tag = request.nextUrl.searchParams.get("tag") || undefined;
-  const photos = await getAllPhotos({ search, tag });
-  return Response.json(photos.map(withPublicUrl));
+  const sp = request.nextUrl.searchParams;
+  const search = sp.get("search") || undefined;
+  const tag = sp.get("tag") || undefined;
+  const page = Math.max(1, parseInt(sp.get("page") || "1", 10));
+  const limit = Math.min(50, Math.max(1, parseInt(sp.get("limit") || "20", 10)));
+
+  const result = await getAllPhotos({ search, tag }, page, limit);
+  const photoIds = result.photos.map((p) => p.id);
+
+  // Fetch comment + favorite counts in batch
+  const [commentCounts, favoriteCounts] = await Promise.all([
+    photoIds.length > 0
+      ? getSupabaseAdmin()
+          .from("comments")
+          .select("photo_id")
+          .in("photo_id", photoIds)
+          .then(({ data }) => {
+            const map: Record<string, number> = {};
+            (data || []).forEach((r) => {
+              map[r.photo_id] = (map[r.photo_id] || 0) + 1;
+            });
+            return map;
+          })
+      : Promise.resolve({} as Record<string, number>),
+    photoIds.length > 0
+      ? getSupabaseAdmin()
+          .from("favorites")
+          .select("photo_id")
+          .in("photo_id", photoIds)
+          .then(({ data }) => {
+            const map: Record<string, number> = {};
+            (data || []).forEach((r) => {
+              map[r.photo_id] = (map[r.photo_id] || 0) + 1;
+            });
+            return map;
+          })
+      : Promise.resolve({} as Record<string, number>),
+  ]);
+
+  const photosWithUrl = result.photos.map((p) =>
+    withPublicUrl({
+      ...p,
+      commentCount: commentCounts[p.id] || 0,
+      favoriteCount: favoriteCounts[p.id] || 0,
+    })
+  );
+
+  return Response.json({
+    photos: photosWithUrl,
+    total: result.total,
+    page: result.page,
+    limit: result.limit,
+    totalPages: result.totalPages,
+  });
 }
 
 export async function POST(request: NextRequest) {

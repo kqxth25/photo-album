@@ -3,19 +3,16 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 let supabaseInstance: SupabaseClient | null = null;
 let supabaseAdminInstance: SupabaseClient | null = null;
 
-function getEnv(key: string): string {
-  const value = process.env[key];
-  if (!value) {
-    throw new Error(`Missing environment variable: ${key}`);
-  }
-  return value;
-}
-
 export function getSupabase(): SupabaseClient {
   if (!supabaseInstance) {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!url || !key) {
+      console.warn("[Supabase] NEXT_PUBLIC vars missing — auth will fail. Restart dev server.");
+    }
     supabaseInstance = createClient(
-      getEnv("NEXT_PUBLIC_SUPABASE_URL"),
-      getEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY")
+      url || "https://placeholder.supabase.co",
+      key || "placeholder"
     );
   }
   return supabaseInstance;
@@ -23,9 +20,11 @@ export function getSupabase(): SupabaseClient {
 
 export function getSupabaseAdmin(): SupabaseClient {
   if (!supabaseAdminInstance) {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
     supabaseAdminInstance = createClient(
-      getEnv("NEXT_PUBLIC_SUPABASE_URL"),
-      getEnv("SUPABASE_SERVICE_ROLE_KEY")
+      url || "https://placeholder.supabase.co",
+      key || "placeholder"
     );
   }
   return supabaseAdminInstance;

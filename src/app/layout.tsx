@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import DinoCursor from "@/components/DinoCursor";
+import ClientWrapper from "@/components/ClientWrapper";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -28,11 +30,11 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full">
-        {/* Layer 2b: Noise texture (above glass, below UI) */}
-        <div className="noise-texture" />
-
-        {/* Layer 3+4: UI Content */}
-        <div className="ui-layer">{children}</div>
+        <ClientWrapper>
+          <DinoCursor />
+          <div className="noise-texture" />
+          <div className="ui-layer">{children}</div>
+        </ClientWrapper>
       </body>
     </html>
   );

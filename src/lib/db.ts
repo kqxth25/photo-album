@@ -11,37 +11,70 @@ export interface Photo {
   description: string | null;
   tags: string[];
   created_at: string;
+  commentCount?: number;
+  favoriteCount?: number;
 }
 
-interface PhotoFilters {
+export interface PhotoFilters {
   search?: string;
   tag?: string;
 }
 
-export async function getAllPhotos(filters?: PhotoFilters): Promise<Photo[]> {
-  let query = getSupabaseAdmin()
-    .from("photos")
-    .select("*")
-    .order("created_at", { ascending: false });
+export interface PaginatedResult {
+  photos: Photo[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+const DEFAULT_LIMIT = 20;
+
+export async function getAllPhotos(
+  filters?: PhotoFilters,
+  page = 1,
+  limit = DEFAULT_LIMIT
+): Promise<PaginatedResult> {
+  const supabase = getSupabaseAdmin();
+
+  // ── Build base query ──
+  let baseQuery = supabase.from("photos").select("*", { count: "exact" });
 
   if (filters?.search) {
     const term = `%${filters.search}%`;
-    query = query.or(
-      `filename.ilike.${term},description.ilike.${term}`
-    );
+    baseQuery = baseQuery.or(`filename.ilike.${term},description.ilike.${term}`);
   }
-
   if (filters?.tag) {
-    query = query.contains("tags", [filters.tag]);
+    baseQuery = baseQuery.contains("tags", [filters.tag]);
   }
 
-  const { data, error } = await query;
+  // ── Count ──
+  const { count, error: countError } = await baseQuery;
+  if (countError || count === null) {
+    console.error("Count error:", countError);
+    return { photos: [], total: 0, page, limit, totalPages: 0 };
+  }
+
+  // ── Paginate ──
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
+
+  const { data, error } = await baseQuery
+    .order("created_at", { ascending: false })
+    .range(from, to);
 
   if (error) {
-    console.error("Failed to fetch photos:", error);
-    return [];
+    console.error("Fetch error:", error);
+    return { photos: [], total: count, page, limit, totalPages: Math.ceil(count / limit) };
   }
-  return (data || []) as Photo[];
+
+  return {
+    photos: (data || []) as Photo[],
+    total: count,
+    page,
+    limit,
+    totalPages: Math.ceil(count / limit),
+  };
 }
 
 export async function getPhotoById(id: string): Promise<Photo | null> {
@@ -100,7 +133,6 @@ export async function getAllTags(): Promise<string[]> {
     }
   }
 
-  // Sort by frequency descending
   return [...tagCounts.entries()]
     .sort((a, b) => b[1] - a[1])
     .map(([tag]) => tag);

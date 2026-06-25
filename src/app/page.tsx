@@ -3,6 +3,23 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import PhotoCard from "@/components/PhotoCard";
+import SegmentedControl from "@/components/SegmentedControl";
+import { useAuth } from "@/lib/AuthContext";
+import AuthModal from "@/components/AuthModal";
+
+/** Generate page numbers with ellipsis. e.g. [1, "...", 5, 6, 7, "...", 12] */
+function generatePages(current: number, total: number): (number | "...")[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const pages: (number | "...")[] = [];
+  pages.push(1);
+  if (current > 3) pages.push("...");
+  const start = Math.max(2, current - 1);
+  const end = Math.min(total - 1, current + 1);
+  for (let i = start; i <= end; i++) pages.push(i);
+  if (current < total - 2) pages.push("...");
+  pages.push(total);
+  return pages;
+}
 
 interface Photo {
   id: string;
@@ -33,29 +50,41 @@ export default function Home() {
 
   const [search, setSearch] = useState("");
   const [activeTags, setActiveTags] = useState<string[]>([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [jumpInput, setJumpInput] = useState("");
+  const [authOpen, setAuthOpen] = useState(false);
+  const [view, setView] = useState<"album" | "favorites">("album");
+  const { user, username, signOut } = useAuth();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const fetchPhotos = useCallback(
-    async (searchTerm?: string, filterTags?: string[]) => {
+    async (searchTerm?: string, filterTags?: string[], p?: number) => {
       try {
         const params = new URLSearchParams();
         if (searchTerm) params.set("search", searchTerm);
         if (filterTags && filterTags.length === 1) {
           params.set("tag", filterTags[0]);
         }
+        params.set("page", String(p || page));
+        params.set("limit", "12");
         const qs = params.toString();
-        const res = await fetch(`/api/photos${qs ? `?${qs}` : ""}`);
+        const res = await fetch(`/api/photos?${qs}`);
         const data = await res.json();
-        setPhotos(data);
+        setPhotos(data.photos);
+        setTotalPages(data.totalPages);
+        setTotal(data.total);
+        if (p) setPage(p);
       } catch (err) {
         console.error("Failed to load photos:", err);
       } finally {
         setLoading(false);
       }
     },
-    []
+    [page]
   );
 
   const fetchTags = useCallback(async () => {
@@ -68,30 +97,67 @@ export default function Home() {
     }
   }, []);
 
+  const loadFavorites = useCallback(async (p?: number) => {
+    if (!user) { setAuthOpen(true); setView("album"); return; }
+    try {
+      const pg = p || page;
+      const res = await fetch(`/api/favorites?page=${pg}&limit=12`, {
+        headers: { "x-user-id": user.id },
+      });
+      const data = await res.json();
+      setPhotos(data.photos || []);
+      setTotalPages(data.totalPages || 1);
+      setTotal(data.total || 0);
+      if (p) setPage(p);
+    } catch (err) {
+      console.error("Failed to load favorites:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [user, page]);
+
   useEffect(() => {
+    setLoading(true);
     const urlParams = new URLSearchParams(window.location.search);
     const initialTag = urlParams.get("tag");
     if (initialTag) {
       setActiveTags([initialTag]);
       fetchPhotos(undefined, [initialTag]);
+    } else if (view === "favorites") {
+      loadFavorites(1);
     } else {
       fetchPhotos();
     }
     fetchTags();
-  }, [fetchPhotos, fetchTags]);
+  }, [fetchPhotos, fetchTags, view, loadFavorites]);
+
+  // Switch view
+  const switchView = (key: string) => {
+    setActiveTags([]);
+    setSearch("");
+    setView(key as "album" | "favorites");
+  };
+
+  // Unified page navigation
+  const goToPage = (p: number) => {
+    if (view === "favorites") loadFavorites(p);
+    else fetchPhotos(search, activeTags, p);
+  };
 
   const onSearchChange = (value: string) => {
     setSearch(value);
     if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
     searchTimerRef.current = setTimeout(() => {
-      fetchPhotos(value, activeTags);
+      setPage(1);
+      fetchPhotos(value, activeTags, 1);
     }, 300);
   };
 
   const toggleTag = (tag: string) => {
     setActiveTags((prev) => {
       const next = prev.includes(tag) ? prev.filter((t) => t !== tag) : [tag];
-      fetchPhotos(search, next);
+      setPage(1);
+      fetchPhotos(search, next, 1);
       return next;
     });
   };
@@ -161,7 +227,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col flex-1">
+    <div className="flex flex-col min-h-screen">
       {/* Header — glass morphism */}
       <header
         className="sticky top-0 z-10 border-b border-white/8"
@@ -174,20 +240,59 @@ export default function Home() {
       >
         <div className="max-w-6xl mx-auto px-5 py-4">
           <div className="flex items-center justify-between mb-3">
-            <h1 className="text-[24px] font-bold text-white tracking-tight">
-              📷 共享相册
-            </h1>
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-              className="h-11 px-5 bg-[#7EA9FF] text-white rounded-full hover:opacity-90 disabled:opacity-50 transition-opacity text-sm font-medium cursor-pointer"
-              style={{ boxShadow: "0 6px 20px rgba(0,0,0,0.35)" }}
-            >
-              {uploading ? "上传中..." : "上传照片"}
-            </button>
+            <SegmentedControl
+              items={[
+                {
+                  key: "album",
+                  icon: (
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  ),
+                  label: "相册",
+                },
+                {
+                  key: "favorites",
+                  icon: (
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
+                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                  ),
+                  label: "收藏",
+                },
+              ]}
+              active={view}
+              onChange={switchView}
+            />
+            <div className="flex items-center gap-2">
+              {user ? (
+                <>
+                  <span className="text-sm text-[#B8B8B8]">{username}</span>
+                  <button
+                    onClick={signOut}
+                    className="h-11 px-5 text-white rounded-full hover:opacity-90 transition-opacity text-sm font-medium cursor-pointer"
+                    style={{ background: "rgba(255,255,255,0.1)", boxShadow: "0 6px 20px rgba(0,0,0,0.35)" }}
+                  >
+                    退出登录
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => setAuthOpen(true)}
+                  className="h-11 px-5 bg-[#7EA9FF] text-white rounded-full hover:opacity-90 transition-opacity text-sm font-medium cursor-pointer"
+                  style={{ boxShadow: "0 6px 20px rgba(0,0,0,0.35)" }}
+                >
+                  注册 / 登录
+                </button>
+              )}
+            </div>
           </div>
 
-          {/* Search bar — capsule */}
+          {/* Search + Tags — only in album view */}
+          {view === "album" && (
+          <>
           <div className="relative">
             <svg
               className="absolute left-4 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-[#666666]"
@@ -221,7 +326,6 @@ export default function Home() {
             />
           </div>
 
-          {/* Tag filter bar */}
           {allTags.length > 0 && (
             <div className="flex gap-2 mt-3 overflow-x-auto pb-1 scrollbar-none">
               {allTags.map((tag) => {
@@ -244,12 +348,14 @@ export default function Home() {
               })}
             </div>
           )}
+          </>
+          )}
         </div>
       </header>
 
-      <main className="flex-1 max-w-6xl mx-auto w-full px-5 py-8">
-        {/* Upload drop zone */}
-        {!showUploadForm && (
+      <main className="flex-1 max-w-6xl mx-auto w-full px-5 py-8 flex flex-col">
+        {/* Upload drop zone — only in album view */}
+        {!showUploadForm && view === "album" && (
           <div
             onDrop={handleDrop}
             onDragOver={(e) => {
@@ -473,16 +579,110 @@ export default function Home() {
           </div>
         ) : (
           /* Photo grid */
-          <div className="columns-2 sm:columns-3 md:columns-4 gap-5 space-y-5">
+          <div className="columns-1 sm:columns-2 md:columns-3 gap-6 space-y-6 animate-fadeInUp" key={view}>
             {photos.map((photo, i) => (
               <PhotoCard key={photo.id} photo={photo} index={i} />
             ))}
           </div>
         )}
+
       </main>
 
+      {/* Bottom pagination bar — pushed to bottom of content */}
+      {!loading && (
+        <div
+          className="mt-auto flex items-center justify-center gap-2 px-4 py-3 flex-wrap rounded-3xl mx-auto max-w-lg"
+          style={{
+            background: "rgba(60,60,60,0.6)",
+            backdropFilter: "blur(16px)",
+            WebkitBackdropFilter: "blur(16px)",
+            border: "1px solid rgba(255,255,255,0.06)",
+          }}
+        >
+          {/* Prev */}
+          <button
+            onClick={() => goToPage(page - 1)}
+            disabled={page <= 1}
+            className="h-8 w-8 flex items-center justify-center rounded-full text-sm disabled:opacity-25 hover:bg-white/10 transition-colors"
+            style={{ color: "#B8B8B8" }}
+          >
+            ‹
+          </button>
+
+          {/* Page numbers */}
+          {generatePages(page, totalPages).map((p, i) =>
+            p === "..." ? (
+              <span key={`dot-${i}`} className="w-8 text-center text-xs" style={{ color: "#666666" }}>
+                ...
+              </span>
+            ) : (
+              <button
+                key={p}
+                onClick={() => goToPage(p as number)}
+                className="h-8 w-8 flex items-center justify-center rounded-full text-xs transition-all"
+                style={{
+                  background: p === page ? "rgba(126,169,255,0.25)" : "transparent",
+                  color: p === page ? "#7EA9FF" : "#B8B8B8",
+                  fontWeight: p === page ? 600 : 400,
+                }}
+              >
+                {p}
+              </button>
+            )
+          )}
+
+          {/* Next */}
+          <button
+            onClick={() => goToPage(page + 1)}
+            disabled={page >= totalPages}
+            className="h-8 w-8 flex items-center justify-center rounded-full text-sm disabled:opacity-25 hover:bg-white/10 transition-colors"
+            style={{ color: "#B8B8B8" }}
+          >
+            ›
+          </button>
+
+          {/* Total + Jump */}
+          <span className="text-xs ml-3" style={{ color: "#666666" }}>
+            共 {total} 张
+          </span>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const n = parseInt(jumpInput, 10);
+              if (n >= 1 && n <= totalPages) {
+                fetchPhotos(search, activeTags, n);
+              }
+              setJumpInput("");
+            }}
+            className="flex items-center gap-1 ml-2"
+          >
+            <input
+              type="number"
+              min={1}
+              max={totalPages}
+              value={jumpInput}
+              onChange={(e) => setJumpInput(e.target.value)}
+              placeholder={`${page}/${totalPages}`}
+              className="h-8 w-14 px-2 rounded-full text-center text-xs focus:outline-none"
+              style={{
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.08)",
+                color: "#ECECEC",
+              }}
+            />
+            <button
+              type="submit"
+              className="h-8 px-3 rounded-full text-xs hover:bg-white/10 transition-colors"
+              style={{ color: "#B8B8B8" }}
+            >
+              跳转
+            </button>
+          </form>
+        </div>
+      )}
+
       {/* FAB */}
-      {!showUploadForm && (
+      {!showUploadForm && view === "album" && (
         <button
           onClick={() => {
             fileInputRef.current?.click();
@@ -510,6 +710,8 @@ export default function Home() {
           </svg>
         </button>
       )}
+      {/* Auth Modal */}
+      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </div>
   );
 }
