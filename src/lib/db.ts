@@ -2,6 +2,7 @@ import { getSupabaseAdmin } from "./supabase";
 
 export interface Photo {
   id: string;
+  title: string | null;
   filename: string;
   stored_name: string;
   mime_type: string;

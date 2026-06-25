@@ -78,6 +78,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Parse description and tags from form data
+    const title = (formData.get("title") as string) || null;
     const description = (formData.get("description") as string) || null;
     const tagsRaw = (formData.get("tags") as string) || "";
     const tags = tagsRaw
@@ -94,6 +95,7 @@ export async function POST(request: NextRequest) {
       const uploaded = await processUpload(file);
       await insertPhoto({
         id: uploaded.id,
+        title,
         filename: uploaded.filename,
         stored_name: uploaded.storedName,
         mime_type: uploaded.mimeType,

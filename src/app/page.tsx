@@ -23,6 +23,7 @@ function generatePages(current: number, total: number): (number | "...")[] {
 
 interface Photo {
   id: string;
+  title: string | null;
   filename: string;
   stored_name: string;
   mime_type: string;
@@ -43,6 +44,7 @@ export default function Home() {
   const [dragOver, setDragOver] = useState(false);
 
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [uploadTitle, setUploadTitle] = useState("");
   const [uploadDesc, setUploadDesc] = useState("");
   const [uploadTags, setUploadTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
@@ -169,6 +171,7 @@ export default function Home() {
     );
     if (fileArr.length === 0) return;
     setSelectedFiles(fileArr);
+    setUploadTitle("");
     setUploadDesc("");
     setUploadTags([]);
     setTagInput("");
@@ -199,6 +202,9 @@ export default function Home() {
     const formData = new FormData();
     for (const file of selectedFiles) {
       formData.append("files", file);
+    }
+    if (uploadTitle.trim()) {
+      formData.append("title", uploadTitle.trim());
     }
     if (uploadDesc.trim()) {
       formData.append("description", uploadDesc.trim());
@@ -424,6 +430,19 @@ export default function Home() {
                 </div>
               ))}
             </div>
+
+            {/* Title */}
+            <input
+              type="text"
+              value={uploadTitle}
+              onChange={(e) => setUploadTitle(e.target.value)}
+              placeholder="标题（可选）..."
+              className="w-full h-11 px-4 rounded-full text-sm focus:outline-none mb-3 placeholder-[#666666] text-[#ECECEC]"
+              style={{
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.08)",
+              }}
+            />
 
             {/* Description */}
             <textarea
